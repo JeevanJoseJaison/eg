@@ -81,3 +81,6 @@ app.post('/data', (req, res) => {
 app.listen(3000, () => {
     console.log('Server started on port 3000');
 });
+
+
+[    { "name": "John Smith", "age": 35, "gender": "male", "location": "New York" },    { "name": "Jane Doe", "age": 29, "gender": "female", "location": "Los Angeles" },    { "name": "Bob Johnson", "age": 42, "gender": "male", "location": "Chicago" },    { "name": "Samantha Williams", "age": 32, "gender": "female", "location": "New York" },    { "name": "Michael Brown", "age": 25, "gender": "male", "location": "Los Angeles" }]
