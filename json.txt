@@ -1,85 +1,75 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import axios from 'axios';
 
 function App() {
-    const [data, setData] = useState([]);
-    const [filters, setFilters] = useState({
-        age: '',
-        gender: '',
-        location: ''
-    });
+    const [filter, setFilter] = useState({ gender: 'male', location: 'New York' });
 
-    const handleChange = event => {
-        setFilters({ ...filters, [event.target.name]: event.target.value });
-    };
-
-    const handleSubmit = event => {
-        event.preventDefault();
-        fetch('/data', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(filters)
-        })
-            .then(res => res.json())
-            .then(data => setData(data));
+    const handleSubmit = e => {
+        e.preventDefault();
+        axios.post('http://localhost:5000/filter', { filter })
+            .then(response => {
+                console.log(response.data);
+            })
+            .catch(error => {
+                console.log(error.message);
+            });
     };
 
     return (
         <div>
             <form onSubmit={handleSubmit}>
                 <label>
-                    Filter by age:
-                    <input type="number" name="age" value={filters.age} onChange={handleChange} />
-                </label>
-                <label>
-                    Filter by gender:
-                    <select name="gender" value={filters.gender} onChange={handleChange}>
-                        <option value="">All</option>
+                    Gender:
+                    <select value={filter.gender} onChange={e => setFilter({ ...filter, gender: e.target.value })}>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                     </select>
                 </label>
                 <label>
-                    Filter by location:
-                    <input type="text" name="location" value={filters.location} onChange={handleChange} />
+                    Location:
+                    <select value={filter.location} onChange={e => setFilter({ ...filter, location: e.target.value })}>
+                        <option value="New York">New York</option>
+                        <option value="Los Angeles">Los Angeles</option>
+                        <option value="Chicago">Chicago</option>
+                    </select>
                 </label>
                 <button type="submit">Filter</button>
             </form>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Age</th>
-                        <th>Gender</th>
-                        <th>Location</th>
-                    </tr>
-                </thead
+        </div>
+    );
+}
 
+export default App;
 
 
 const express = require('express');
-const app = express();
 const fs = require('fs');
+const axios = require('axios');
+const app = express();
 
-app.post('/data', (req, res) => {
+app.use(express.json());
+
+app.post('/filter', (req, res) => {
     fs.readFile('./data.json', (err, data) => {
-        if (err) throw err;
-        const jsonData = JSON.parse(data);
-        let filteredData = jsonData;
-        if(req.body.age) {
-            filteredData = filteredData.filter(item => item.age > req.body.age);
+        if (err) {
+            res.status(500).send('Error reading JSON file');
+        } else {
+            const jsonData = JSON.parse(data);
+            const { filter } = req.body;
+            let filteredData = jsonData.filter(obj => obj.gender === filter.gender && obj.location === filter.location);
+            axios.post('http://localhost:3000/', filteredData)
+                .then(response => {
+                    res.status(200).send('Data sent successfully');
+                })
+                .catch(error => {
+                    res.status(500).send(error.message);
+                });
         }
-        if(req.body.gender) {
-            filteredData = filteredData.filter(item => item.gender === req.body.gender);
-        }
-        if(req.body.location) {
-            filteredData = filteredData.filter(item => item.location === req.body.location);
-        }
-        res.json(filteredData);
     });
 });
 
-app.listen(3000, () => {
-    console.log('Server started on port 3000');
+app.listen(5000, () => {
+    console.log('Server started on port 5000');
 });
 
 
