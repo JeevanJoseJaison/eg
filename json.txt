@@ -1,0 +1,83 @@
+import React, { useState, useEffect } from 'react';
+
+function App() {
+    const [data, setData] = useState([]);
+    const [filters, setFilters] = useState({
+        age: '',
+        gender: '',
+        location: ''
+    });
+
+    const handleChange = event => {
+        setFilters({ ...filters, [event.target.name]: event.target.value });
+    };
+
+    const handleSubmit = event => {
+        event.preventDefault();
+        fetch('/data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(filters)
+        })
+            .then(res => res.json())
+            .then(data => setData(data));
+    };
+
+    return (
+        <div>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Filter by age:
+                    <input type="number" name="age" value={filters.age} onChange={handleChange} />
+                </label>
+                <label>
+                    Filter by gender:
+                    <select name="gender" value={filters.gender} onChange={handleChange}>
+                        <option value="">All</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </label>
+                <label>
+                    Filter by location:
+                    <input type="text" name="location" value={filters.location} onChange={handleChange} />
+                </label>
+                <button type="submit">Filter</button>
+            </form>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Gender</th>
+                        <th>Location</th>
+                    </tr>
+                </thead
+
+
+
+const express = require('express');
+const app = express();
+const fs = require('fs');
+
+app.post('/data', (req, res) => {
+    fs.readFile('./data.json', (err, data) => {
+        if (err) throw err;
+        const jsonData = JSON.parse(data);
+        let filteredData = jsonData;
+        if(req.body.age) {
+            filteredData = filteredData.filter(item => item.age > req.body.age);
+        }
+        if(req.body.gender) {
+            filteredData = filteredData.filter(item => item.gender === req.body.gender);
+        }
+        if(req.body.location) {
+            filteredData = filteredData.filter(item => item.location === req.body.location);
+        }
+        res.json(filteredData);
+    });
+});
+
+app.listen(3000, () => {
+    console.log('Server started on port 3000');
+});
