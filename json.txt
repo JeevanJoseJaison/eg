@@ -1,76 +1,45 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-
-function App() {
-    const [filter, setFilter] = useState({ gender: 'male', location: 'New York' });
-
-    const handleSubmit = e => {
-        e.preventDefault();
-        axios.post('http://localhost:5000/filter', { filter })
-            .then(response => {
-                console.log(response.data);
-            })
-            .catch(error => {
-                console.log(error.message);
-            });
-    };
-
-    return (
-        <div>
-            <form onSubmit={handleSubmit}>
-                <label>
-                    Gender:
-                    <select value={filter.gender} onChange={e => setFilter({ ...filter, gender: e.target.value })}>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                    </select>
-                </label>
-                <label>
-                    Location:
-                    <select value={filter.location} onChange={e => setFilter({ ...filter, location: e.target.value })}>
-                        <option value="New York">New York</option>
-                        <option value="Los Angeles">Los Angeles</option>
-                        <option value="Chicago">Chicago</option>
-                    </select>
-                </label>
-                <button type="submit">Filter</button>
-            </form>
-        </div>
-    );
+switch(true) {
+  case data[j].plugin_output.includes("CRITICAL"):
+    obj = { status: "Critical", name: j};
+    break;
+  case data[j].plugin_output.includes("OK"):
+    obj = { status: "ok", name: j};
+    break;
+  case j === "Store Open/Close" && !data[j].plugin_output.includes(".err"):
+    obj = { status: "ok", name: j};
+    break;
+  case j === "MNT Deployment":
+    if(data[j].plugin_output.includes("failure.dat")) {
+      obj = { status: "ok", name: j};
+    } else {
+      obj = { status: "Critical", name: j};
+    }
+    break;
+  case j === "XStore Mobile" || j === "XEnvironment":
+    if (data[j].plugin_output.includes (".anchor")) {
+      obj = { status: "ok", name: j };
+    } else {
+      obj = { status: "Critical", name: j};
+    }
+    break;
+  case j.includes("Build"):
+    if (data[j].plugin_output.includes (".anchor")) {
+      obj={ status: "ok", name: j};
+    } else {
+      obj = { status: "Critical", name: j};
+    }
+    break;
+  case j.toLowerCase().includes("application"):
+    if (data[j].plugin_output.includes("installx-pos.log")) {
+      obj = { status: "green", name: j};
+    } else {
+      obj = { status: "red", name: j};
+    }
+    break;
+  case data[j].plugin_output.includes("WARNING"):
+    obj = { status: "warning", name: j};
+    break;
+  default:
+    obj = { status: "unknown", name : j};
+    break;
 }
-
-export default App;
-
-
-const express = require('express');
-const fs = require('fs');
-const axios = require('axios');
-const app = express();
-
-app.use(express.json());
-
-app.post('/filter', (req, res) => {
-    fs.readFile('./data.json', (err, data) => {
-        if (err) {
-            res.status(500).send('Error reading JSON file');
-        } else {
-            const jsonData = JSON.parse(data);
-            const { filter } = req.body;
-            let filteredData = jsonData.filter(obj => obj.gender === filter.gender && obj.location === filter.location);
-            axios.post('http://localhost:3000/', filteredData)
-                .then(response => {
-                    res.status(200).send('Data sent successfully');
-                })
-                .catch(error => {
-                    res.status(500).send(error.message);
-                });
-        }
-    });
-});
-
-app.listen(5000, () => {
-    console.log('Server started on port 5000');
-});
-
-
-[    { "name": "John Smith", "age": 35, "gender": "male", "location": "New York" },    { "name": "Jane Doe", "age": 29, "gender": "female", "location": "Los Angeles" },    { "name": "Bob Johnson", "age": 42, "gender": "male", "location": "Chicago" },    { "name": "Samantha Williams", "age": 32, "gender": "female", "location": "New York" },    { "name": "Michael Brown", "age": 25, "gender": "male", "location": "Los Angeles" }]
